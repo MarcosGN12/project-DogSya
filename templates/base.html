@@ -1,0 +1,141 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{% block title %}DogSya — Find your new best friend{% endblock %}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        coral: {
+                            50:  '#FFF3EF',
+                            100: '#FFE3DA',
+                            200: '#FFC7B5',
+                            300: '#FFA98C',
+                            400: '#FF8A65',
+                            500: '#FF7043',
+                            600: '#F4511E',
+                            700: '#D84315',
+                        },
+                        cream: '#FFF8F3',
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="min-h-full bg-cream pb-24 text-slate-800 antialiased">
+
+    <header class="sticky top-0 z-40 border-b border-coral-100/70 bg-cream/85 backdrop-blur-md">
+        <div class="mx-auto w-full max-w-6xl px-4">
+
+            <div class="flex items-center gap-3 py-3">
+                <a href="/" class="flex items-center gap-2">
+                    <span class="grid h-9 w-9 place-items-center rounded-2xl bg-gradient-to-br from-coral-400 to-coral-600 text-lg shadow-sm">🐾</span>
+                    <span class="text-lg font-extrabold tracking-tight text-slate-800">Dog<span class="text-coral-500">Sya</span></span>
+                </a>
+
+                <div class="ml-auto flex items-center gap-2">
+                    <a href="{% url 'dogs:favorites' %}" class="relative grid h-9 w-9 place-items-center rounded-2xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-100 transition hover:text-coral-500" title="Favorites">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7.5-4.35-9.6-8.5A5.5 5.5 0 0 1 12 5.6a5.5 5.5 0 0 1 9.6 6.9C19.5 16.65 12 21 12 21Z" />
+                        </svg>
+                        {% if user.is_authenticated and user.favorite_set.count %}
+                            <span class="absolute -right-1 -top-1 grid h-5 min-w-[1.25rem] place-items-center rounded-full bg-coral-500 px-1 text-[10px] font-bold text-white ring-2 ring-cream">
+                                {{ user.favorite_set.count }}
+                            </span>
+                        {% endif %}
+                    </a>
+
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'accounts:profile' %}" class="grid h-9 w-9 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-coral-400 to-coral-600 text-sm font-bold text-white shadow-sm ring-2 ring-white" title="{{ user.username }}">
+                            {% if user.avatar %}
+                                <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="h-full w-full object-cover">
+                            {% else %}
+                                {{ user.username|slice:":1"|upper }}
+                            {% endif %}
+                        </a>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="rounded-2xl bg-coral-500 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-coral-600">
+                            Sign in
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <form action="{% url 'dogs:dog_list' %}" method="get" class="relative pb-3">
+                <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-[calc(50%+0.375rem)] text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="7" />
+                    <path stroke-linecap="round" d="m21 21-4.3-4.3" />
+                </svg>
+                <input type="search" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Search dogs, food &amp; treats..."
+                       class="w-full rounded-2xl border-0 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-700 shadow-sm ring-1 ring-coral-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-coral-400">
+            </form>
+
+            <nav class="no-scrollbar flex gap-2 overflow-x-auto pb-3">
+                <a href="/" class="whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-semibold transition {% if request.resolver_match.url_name == 'home' %}bg-coral-500 text-white shadow-sm{% else %}bg-white text-slate-600 ring-1 ring-slate-100 hover:text-coral-500{% endif %}">Home</a>
+                <a href="{% url 'dogs:dog_list' %}" class="whitespace-nowrap rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-slate-600 ring-1 ring-slate-100 transition hover:text-coral-500">Adopt</a>
+                <a href="{% url 'products:product_list' %}" class="whitespace-nowrap rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-slate-600 ring-1 ring-slate-100 transition hover:text-coral-500">Shop</a>
+                <a href="{% url 'dogs:favorites' %}" class="whitespace-nowrap rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-slate-600 ring-1 ring-slate-100 transition hover:text-coral-500">Favorites</a>
+                <a href="{% url 'accounts:profile' %}" class="whitespace-nowrap rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-slate-600 ring-1 ring-slate-100 transition hover:text-coral-500">Profile</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="mx-auto w-full max-w-6xl px-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <nav class="fixed inset-x-0 bottom-0 z-40 border-t border-coral-100/70 bg-cream/90 backdrop-blur-md lg:hidden">
+        <div class="mx-auto grid w-full max-w-6xl grid-cols-5">
+            <a href="/" class="flex flex-col items-center gap-0.5 py-2 text-[11px] font-semibold {% if request.resolver_match.url_name == 'home' %}text-coral-500{% else %}text-slate-500{% endif %}">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m3 10.5 9-7 9 7V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.5Z" />
+                </svg>
+                Home
+            </a>
+            <a href="{% url 'dogs:dog_list' %}" class="flex flex-col items-center gap-0.5 py-2 text-[11px] font-semibold text-slate-500 transition hover:text-coral-500">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7.5-4.35-9.6-8.5A5.5 5.5 0 0 1 12 5.6a5.5 5.5 0 0 1 9.6 6.9C19.5 16.65 12 21 12 21Z" />
+                    <circle cx="12" cy="12" r="2.5" />
+                </svg>
+                Adopt
+            </a>
+            <a href="{% url 'products:product_list' %}" class="flex flex-col items-center gap-0.5 py-2 text-[11px] font-semibold text-slate-500 transition hover:text-coral-500">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6ZM3 6h18M16 10a4 4 0 0 1-8 0" />
+                </svg>
+                Shop
+            </a>
+            <a href="{% url 'products:cart' %}" class="flex flex-col items-center gap-0.5 py-2 text-[11px] font-semibold text-slate-500 transition hover:text-coral-500">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="20" r="1.5" />
+                    <circle cx="18" cy="20" r="1.5" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l2.2 12.2a1.5 1.5 0 0 0 1.5 1.3h8.6a1.5 1.5 0 0 0 1.5-1.2L21 7H6" />
+                </svg>
+                Cart
+            </a>
+            <a href="{% url 'accounts:profile' %}" class="flex flex-col items-center gap-0.5 py-2 text-[11px] font-semibold text-slate-500 transition hover:text-coral-500">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="8" r="3.5" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+                </svg>
+                Profile
+            </a>
+        </div>
+    </nav>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

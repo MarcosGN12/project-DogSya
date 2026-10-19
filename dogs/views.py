@@ -1,3 +1,30 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Dog, Favorite
+from products.models import Product
 
-# Create your views here.
+def home(request):
+    dogs = Dog.objects.filter(is_available=True)[:6]
+    products = Product.objects.all()[:4]
+    return render(request, 'home.html', {'dogs': dogs, 'products': products})
+
+def dog_list(request):
+    dogs = Dog.objects.filter(is_available=True)
+    return render(request, 'dogs/dog_list.html', {'dogs': dogs})
+
+def dog_detail(request, pk):
+    dog = get_object_or_404(Dog, pk=pk)
+    return render(request, 'dogs/dog_detail.html', {'dog': dog})
+
+@login_required
+def favorite_list(request):
+    favorites = Favorite.objects.filter(user=request.user)
+    return render(request, 'dogs/favorite_list.html', {'favorites': favorites})
+
+@login_required
+def toggle_favorite(request, dog_id):
+    dog = get_object_or_404(Dog, id=dog_id)
+    favorite, created = Favorite.objects.get_or_create(user=request.user, dog=dog)
+    if not created:
+        favorite.delete()
+    return redirect(request.META.get('HTTP_REFERER', 'dogs:home'))
