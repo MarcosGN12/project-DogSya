@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Adopt a Dog — DogSya{% endblock %}
+
+{% block content %}
+
+    {# ------------------------------ PAGE HEADER ------------------------------ #}
+    <div class="mt-4 flex items-end justify-between gap-3">
+        <div>
+            <h1 class="text-xl font-extrabold text-slate-800 sm:text-2xl">Adoptable Dogs</h1>
+            <p class="text-sm text-slate-500">
+                {% with total=dogs|length %}
+                    {{ total }} dog{{ total|pluralize }} waiting for a loving home
+                {% endwith %}
+            </p>
+        </div>
+        <a href="{% url 'dogs:favorites' %}" class="shrink-0 rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-slate-600 ring-1 ring-slate-100 transition hover:text-coral-500">
+            My Favorites
+        </a>
+    </div>
+
+    {# ------------------------------- FILTERS -------------------------------- #}
+    <details open class="group mt-4 rounded-3xl bg-white shadow-sm ring-1 ring-slate-100">
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3.5 sm:px-5">
+            <span class="flex items-center gap-2 text-sm font-bold text-slate-800">
+                <svg class="h-4 w-4 text-coral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M7 12h10M10 18h4" />
+                </svg>
+                Filters
+            </span>
+            <svg class="h-4 w-4 text-slate-400 transition group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+            </svg>
+        </summary>
+
+        <form method="get" action="{% url 'dogs:dog_list' %}" class="border-t border-coral-100/70 p-4 sm:p-5">
+            {% if request.GET.q %}
+                <input type="hidden" name="q" value="{{ request.GET.q }}">
+            {% endif %}
+
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+
+                {# Size #}
+                <label class="flex flex-col gap-1">
+                    <span class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Size</span>
+                    <select name="size" class="rounded-2xl border-0 bg-cream px-3 py-2.5 text-sm text-slate-700 ring-1 ring-coral-100 focus:outline-none focus:ring-2 focus:ring-coral-400">
+                        <option value="">Any size</option>
+                        <option value="small"  {% if request.GET.size == 'small' %}selected{% endif %}>Small</option>
+                        <option value="medium" {% if request.GET.size == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="large"  {% if request.GET.size == 'large' %}selected{% endif %}>Large</option>
+                        <option value="giant"  {% if request.GET.size == 'giant' %}selected{% endif %}>Giant</option>
+                    </select>
+                </label>
+
+                {# Life stage #}
+                <label class="flex flex-col gap-1">
+                    <span class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Life Stage</span>
+                    <select name="life_stage" class="rounded-2xl border-0 bg-cream px-3 py-2.5 text-sm text-slate-700 ring-1 ring-coral-100 focus:outline-none focus:ring-2 focus:ring-coral-400">
+                        <option value="">Any age</option>
+                        <option value="puppy" {% if request.GET.life_stage == 'puppy' %}selected{% endif %}>Puppy</option>
+                        <option value="young" {% if request.GET.life_stage == 'young' %}selected{% endif %}>Young</option>
+                        <option value="adult" {% if request.GET.life_stage == 'adult' %}selected{% endif %}>Adult</option>
+                        <option value="senior" {% if request.GET.life_stage == 'senior' %}selected{% endif %}>Senior</option>
+                    </select>
+                </label>
+
+                {# Gender #}
+                <label class="flex flex-col gap-1">
+                    <span class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Gender</span>
+                    <select name="gender" class="rounded-2xl border-0 bg-cream px-3 py-2.5 text-sm text-slate-700 ring-1 ring-coral-100 focus:outline-none focus:ring-2 focus:ring-coral-400">
+                        <option value="">Any</option>
+                        <option value="male"   {% if request.GET.gender == 'male' %}selected{% endif %}>Male</option>
+                        <option value="female" {% if request.GET.gender == 'female' %}selected{% endif %}>Female</option>
+                    </select>
+                </label>
+
+                {# Required space #}
+                <label class="flex flex-col gap-1">
+                    <span class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Home Space</span>
+                    <select name="required_space" class="rounded-2xl border-0 bg-cream px-3 py-2.5 text-sm text-slate-700 ring-1 ring-coral-100 focus:outline-none focus:ring-2 focus:ring-coral-400">
+                        <option value="">Any home</option>
+                        <option value="apartment" {% if request.GET.required_space == 'apartment' %}selected{% endif %}>Apartment Friendly</option>
+                        <option value="yard"      {% if request.GET.required_space == 'yard' %}selected{% endif %}>House with Yard</option>
+                        <option value="rural"     {% if request.GET.required_space == 'rural' %}selected{% endif %}>Rural Area</option>
+                    </select>
+                </label>
+
+                {# Continent #}
+                <label class="flex flex-col gap-1">
+                    <span class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Continent</span>
+                    <input type="text" name="continent" value="{{ request.GET.continent|default:'' }}" placeholder="e.g. Europe"
+                           class="rounded-2xl border-0 bg-cream px-3 py-2.5 text-sm text-slate-700 ring-1 ring-coral-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-coral-400">
+                </label>
+            </div>
+
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+                {# Availability toggle #}
+                <label class="inline-flex cursor-pointer items-center gap-2 rounded-full bg-cream px-4 py-2.5 text-sm font-medium text-slate-600 ring-1 ring-coral-100">
+                    <input type="checkbox" name="available" value="1" {% if request.GET.available %}checked{% endif %}
+                           class="h-4 w-4 rounded border-slate-300 text-coral-500 focus:ring-coral-400">
+                    Available only
+                </label>
+
+                <div class="ml-auto flex items-center gap-2">
+                    <a href="{% url 'dogs:dog_list' %}" class="rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-500 transition hover:bg-slate-50">
+                        Reset
+                    </a>
+                    <button type="submit" class="rounded-full bg-coral-500 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-coral-600">
+                        Apply Filters
+                    </button>
+                </div>
+            </div>
+        </form>
+    </details>
+
+    {# ------------------------------ CATALOG GRID ------------------------------ #}
+    {% if dogs %}
+        <div class="mt-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
+            {% for dog in dogs %}
+                <article class="flex flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-100 transition hover:shadow-md">
+                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-coral-50">
+                        {% if dog.image %}
+                            <img src="{{ dog.image.url }}" alt="{{ dog.name }}" class="h-full w-full object-cover">
+                        {% else %}
+                            <div class="grid h-full place-items-center text-4xl">🐶</div>
+                        {% endif %}
+
+                        {% if dog.is_available %}
+                            <span class="absolute left-3 top-3 rounded-full bg-emerald-500 px-3 py-1 text-[11px] font-bold text-white shadow-sm">Ready for Adoption</span>
+                        {% else %}
+                            <span class="absolute left-3 top-3 rounded-full bg-slate-500 px-3 py-1 text-[11px] font-bold text-white shadow-sm">Adopted</span>
+                        {% endif %}
+
+                        <form method="post" action="{% url 'dogs:toggle_favorite' dog.id %}" class="absolute right-3 top-3">
+                            {% csrf_token %}
+                            <button type="submit" title="Toggle favorite" class="grid h-9 w-9 place-items-center rounded-full bg-white/90 text-slate-400 shadow-sm backdrop-blur transition hover:text-coral-500">
+                                <svg class="h-5 w-5 fill-transparent stroke-slate-400 {% for f in dog.favorite_set.all %}{% if f.user_id == user.id %}!fill-coral-500 !stroke-coral-500{% endif %}{% endfor %}" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7.5-4.35-9.6-8.5A5.5 5.5 0 0 1 12 5.6a5.5 5.5 0 0 1 9.6 6.9C19.5 16.65 12 21 12 21Z" />
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="flex flex-1 flex-col p-4">
+                        <div class="flex items-start justify-between gap-2">
+                            <h2 class="text-base font-bold text-slate-800">{{ dog.name }}</h3>
+                            <span class="shrink-0 rounded-full bg-coral-50 px-2.5 py-1 text-[11px] font-semibold text-coral-600">{{ dog.breed }}</span>
+                        </div>
+
+                        <div class="mt-3 flex flex-wrap gap-1.5 text-[11px]">
+                            <span class="rounded-lg bg-slate-100 px-2 py-1 font-medium text-slate-600">{{ dog.get_gender_display }}</span>
+                            <span class="rounded-lg bg-slate-100 px-2 py-1 font-medium text-slate-600">{{ dog.get_life_stage_display }}</span>
+                            <span class="rounded-lg bg-slate-100 px-2 py-1 font-medium text-slate-600">{{ dog.weight_kg }} kg</span>
+                        </div>
+
+                        <div class="mt-2 flex flex-wrap gap-1.5 text-[11px]">
+                            <span class="rounded-lg bg-emerald-50 px-2 py-1 font-medium text-emerald-700">{{ dog.get_required_space_display }}</span>
+                            <span class="rounded-lg bg-sky-50 px-2 py-1 font-medium text-sky-700">{{ dog.continent }}</span>
+                        </div>
+
+                        <a href="{% url 'dogs:dog_detail' dog.id %}" class="mt-auto pt-4">
+                            <span class="block rounded-2xl bg-coral-500 py-2.5 text-center text-sm font-bold text-white shadow-sm transition hover:bg-coral-600">
+                                Meet &amp; Adopt
+                            </span>
+                        </a>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        {# ------------------------------- EMPTY STATE ------------------------------- #}
+        <div class="mt-6 rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-slate-100">
+            <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-coral-50 text-3xl">🐾</div>
+            <h2 class="mt-4 text-base font-bold text-slate-800">No dogs found matching your criteria</h2>
+            <p class="mx-auto mt-1 max-w-sm text-sm text-slate-500">Try adjusting your filters.</p>
+            <a href="{% url 'dogs:dog_list' %}" class="mt-5 inline-block rounded-full bg-coral-500 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-coral-600">
+                Clear Filters
+            </a>
+        </div>
+    {% endif %}
+
+{% endblock %}
